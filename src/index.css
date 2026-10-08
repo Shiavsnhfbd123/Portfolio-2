@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Design tokens. Ink-blue surfaces, one warm accent, one neutral text ramp. */
+@theme {
+  --color-bg: #0e1319;
+  --color-surface: #141b24;
+  --color-raised: #19222d;
+  --color-line: #243040;
+  --color-fg: #e9edf2;
+  --color-muted: #9aa7b6;
+  --color-accent: #e3b04b;
+  --color-accent-hover: #efc269;
+  --color-accent-ink: #1a1405;
+
+  --font-sans: "Instrument Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-serif); letter-spacing: -0.01em; }
+  ::selection { background: rgb(227 176 75 / .3); }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+}
+
+/* One quiet wash of colour behind the page, nothing more. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(48rem 32rem at 90% -8%, rgb(227 176 75 / .07), transparent 65%),
+    radial-gradient(40rem 30rem at -10% 40%, rgb(143 180 220 / .05), transparent 65%);
+}
