@@ -185,5 +185,3 @@ Once it is live, add the URL to the placeholder near the top of this README and 
 </p>
 
 <sub>Built by Shivansh Aggarwal, Faridabad, India. Package license: ISC, as declared in `package.json`.</sub>
-#   P o r t f o l i o - 2  
- 
