@@ -14,6 +14,7 @@ export default function PhotoCard3D() {
   const popupId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popupRef = useRef<HTMLSpanElement>(null);
+  const controlsRef = useRef<HTMLSpanElement>(null);
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
   const reduce = useReducedMotion();
   const px = useMotionValue(0);
@@ -46,22 +47,20 @@ export default function PhotoCard3D() {
 
   useEffect(() => {
     if (!open) return;
-    px.set(0);
-    py.set(0);
-    firstLinkRef.current?.focus({ preventScroll: true });
-
     const onOutside = (event: Event) => {
       if (
         event.target instanceof Node &&
-        !popupRef.current?.contains(event.target) &&
-        !triggerRef.current?.contains(event.target)
-      ) setOpen(false);
+        !controlsRef.current?.contains(event.target)
+      )
+        setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         setOpen(false);
-        triggerRef.current?.focus({ preventScroll: true });
+        if (controlsRef.current?.contains(document.activeElement)) {
+          triggerRef.current?.focus({ preventScroll: true });
+        }
       }
     };
     document.addEventListener("pointerdown", onOutside);
@@ -72,19 +71,19 @@ export default function PhotoCard3D() {
       document.removeEventListener("focusin", onOutside);
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, px, py]);
+  }, [open]);
 
   return (
     <div
       className="portrait-stage"
       style={{ perspective: 1100 }}
-      onPointerMove={reduce || open ? undefined : move}
+      onPointerMove={reduce ? undefined : move}
       onPointerLeave={leave}
     >
       <motion.div
         style={{
-          rotateX: reduce || open ? 0 : rotateX,
-          rotateY: reduce || open ? 0 : rotateY,
+          rotateX: reduce ? 0 : rotateX,
+          rotateY: reduce ? 0 : rotateY,
           transformStyle: "preserve-3d",
         }}
         className="relative"
@@ -100,12 +99,60 @@ export default function PhotoCard3D() {
             height={720}
             fetchPriority="high"
             decoding="async"
+            draggable={false}
           />
           <div className="portrait-overlay">
             <span>{profile.name.toUpperCase()}</span>
             <p>
               <span className="portrait-title">{profile.title}</span>
-              <span className="portrait-social-controls">
+              <span
+                ref={controlsRef}
+                className="portrait-social-controls"
+                onPointerLeave={(event) => {
+                  if (
+                    event.pointerType === "mouse" &&
+                    !event.currentTarget.contains(document.activeElement)
+                  ) {
+                    setOpen(false);
+                  }
+                }}
+                onFocus={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget))
+                    setOpen(true);
+                }}
+                onBlur={(event) => {
+                  if (
+                    !event.currentTarget.contains(event.relatedTarget) &&
+                    !event.currentTarget.matches(":hover")
+                  ) {
+                    setOpen(false);
+                  }
+                }}
+              >
+                <button
+                  ref={triggerRef}
+                  type="button"
+                  className="portrait-link"
+                  aria-label="Open GitHub and LinkedIn profiles"
+                  aria-expanded={open}
+                  aria-controls={popupId}
+                  title="Hover or click to choose GitHub or LinkedIn"
+                  onPointerEnter={(event) => {
+                    if (event.pointerType === "mouse") setOpen(true);
+                  }}
+                  onClick={() => setOpen(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === "ArrowDown") {
+                      event.preventDefault();
+                      setOpen(true);
+                      requestAnimationFrame(() =>
+                        firstLinkRef.current?.focus({ preventScroll: true }),
+                      );
+                    }
+                  }}
+                >
+                  <span aria-hidden="true">↗</span>
+                </button>
                 {open && (
                   <span
                     ref={popupRef}
@@ -139,18 +186,6 @@ export default function PhotoCard3D() {
                     </a>
                   </span>
                 )}
-                <button
-                  ref={triggerRef}
-                  type="button"
-                  className="portrait-link"
-                  aria-label="Open GitHub and LinkedIn profiles"
-                  aria-expanded={open}
-                  aria-controls={popupId}
-                  title="Choose GitHub or LinkedIn"
-                  onClick={() => setOpen((current) => !current)}
-                >
-                  <span aria-hidden="true">↗</span>
-                </button>
               </span>
             </p>
           </div>

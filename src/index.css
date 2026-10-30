@@ -462,6 +462,7 @@
 }
 .portrait-frame {
   position: relative;
+  user-select: none;
   border: 1px solid var(--color-line);
   border-radius: 12px;
   overflow: hidden;
@@ -523,6 +524,9 @@
 }
 .portrait-social-controls {
   display: inline-flex;
+  flex-direction: row-reverse;
+  /* Keep the arrow stationary when the social links appear. */
+  width: 148px;
   align-items: center;
   gap: 8px;
   margin-left: auto;
