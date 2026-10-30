@@ -1,187 +1,87 @@
-<div align="center">
+# Shivansh Aggarwal — Developer Portfolio
 
-<img src="docs/preview-hero.webp" alt="Portfolio hero: Shivansh Aggarwal, Full-Stack Developer, with a tilting 3D portrait" width="100%">
+An upgrade of the existing React + TypeScript + Vite portfolio. All original profile data, projects, skills, education, certifications, contact details, and external URLs are retained in `src/data.ts`. The original résumé PDF is included without alteration.
 
-<br><br>
+## Run locally
 
-# Shivansh Aggarwal
-
-**A personal developer portfolio built with React 19, TypeScript and Tailwind CSS v4.**
-Clean editorial design, one warm accent colour, and motion only where it helps.
-
-<br>
-
-![React](https://img.shields.io/badge/React_19-0e1319?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-0e1319?style=flat-square&logo=typescript&logoColor=3178C6)
-![Vite](https://img.shields.io/badge/Vite_8-0e1319?style=flat-square&logo=vite&logoColor=646CFF)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-0e1319?style=flat-square&logo=tailwindcss&logoColor=06B6D4)
-![Motion](https://img.shields.io/badge/Motion_14-0e1319?style=flat-square&logo=framer&logoColor=white)
-![Vercel](https://img.shields.io/badge/Deploy_on_Vercel-0e1319?style=flat-square&logo=vercel&logoColor=white)
-
-<!-- Add your live site here once it is deployed, for example:
-[**View live site**](https://your-site.vercel.app) -->
-
-[Preview](#preview) &nbsp;·&nbsp; [Highlights](#highlights) &nbsp;·&nbsp; [Quick start](#quick-start) &nbsp;·&nbsp; [Customise](#customise-it) &nbsp;·&nbsp; [Deploy](#deploy) &nbsp;·&nbsp; [Contact](#contact)
-
-</div>
-
----
-
-## Preview
-
-<p align="center">
-  <img src="docs/preview-projects.webp" alt="Projects section with the featured QueryPilot card and three supporting project cards" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/preview-skills.webp" alt="Tech stack section grouped into Languages, Frontend, Backend, AI and Data, and Tools" width="100%">
-</p>
-
-<p align="center">
-  <img src="docs/preview-mobile.webp" alt="Mobile layout: hero, open navigation menu, and projects" width="80%">
-</p>
-
-<p align="center"><sub>Desktop and mobile layouts. The mobile version has its own navigation menu, not a shrunken desktop bar.</sub></p>
-
----
-
-## Highlights
-
-| | |
-|---|---|
-| **Editorial layout** | Section titles sit in a sticky left column while the content scrolls on the right. Only the projects and stat tiles are cards; everything else is ruled lists. |
-| **Tilting 3D portrait** | The hero photo follows the pointer with a gentle tilt, an offset frame behind it and a soft light reflection. Built with Motion springs, no 3D library. |
-| **Featured project story** | QueryPilot gets a full-width panel with a step-by-step view of how a request is handled, showing which steps the AI suggests and which the backend enforces. |
-| **Considered typography** | Fraunces for headings, Instrument Sans for text and JetBrains Mono for small labels. All three are bundled with Fontsource, so there are no requests to external font servers. |
-| **One content file** | Every name, link, project, skill and certification lives in a single typed file, [`src/data.ts`](src/data.ts). Edit it and the whole site updates. |
-| **Accessible by default** | Skip-to-content link, visible keyboard focus, semantic landmarks, descriptive alt text, a labelled mobile menu that closes with `Esc`, and animations that switch off for visitors who prefer reduced motion. |
-| **Light on the browser** | No UI framework and no animation-heavy libraries beyond Motion. The production bundle is about 369 kB of JavaScript (117 kB gzipped) and 30 kB of CSS (8.5 kB gzipped). |
-
----
-
-## Sections
-
-1. **Hero** with name, title, tagline, calls to action and the 3D portrait
-2. **About** with summary, current learning, interests and goal
-3. **Education** in a ruled list, IIT Patna first
-4. **Tech stack** grouped into Languages, Frontend, Backend, AI and Data, and Tools
-5. **Projects** with one featured project and three supporting cards, each with real GitHub and live demo links where they exist
-6. **Certifications** with direct credential links, plus GitHub statistics
-7. **Connect** with GitHub, LinkedIn and email
-
----
-
-## Tech stack
-
-| Layer | Choice |
-|---|---|
-| UI library | React 19 |
-| Language | TypeScript |
-| Build tool | Vite 8 with `@vitejs/plugin-react` |
-| Styling | Tailwind CSS v4 through `@tailwindcss/vite`, with design tokens in `@theme` |
-| Animation | Motion (`motion/react`) |
-| Fonts | Fontsource variable fonts: Fraunces, Instrument Sans, JetBrains Mono |
-
----
-
-## Quick start
-
-You need **Node.js 20.19 or newer** (22.12+ also works).
+Use Node.js 22.12+ (recommended) or 20.19+.
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/Shiavsnhfbd123/<your-repo-name>.git
-cd <your-repo-name>
-
-# 2. Install dependencies
-npm install
-
-# 3. Start the dev server
+npm ci
 npm run dev
 ```
 
-Then open the local address that Vite prints, usually `http://localhost:5173`.
+Open the URL printed by Vite. If dependencies are already installed, start with `npm run dev`.
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Starts the dev server with hot reload |
-| `npm run build` | Type-checks with `tsc`, then builds to `dist/` |
-| `npm run preview` | Serves the production build locally |
-
----
-
-## Customise it
-
-Almost everything is a one-line change.
-
-| To change | Edit |
-|---|---|
-| Name, title, tagline, summary, links, email | `profile` in [`src/data.ts`](src/data.ts) |
-| Education | `education` in [`src/data.ts`](src/data.ts) |
-| Skills and groups | `skills` in [`src/data.ts`](src/data.ts) |
-| Projects | `featured`, `featuredPoints`, `pipeline` and `projects` in [`src/data.ts`](src/data.ts) |
-| Certifications | `certs` in [`src/data.ts`](src/data.ts) |
-| GitHub numbers | `stats` in [`src/data.ts`](src/data.ts) (entered by hand) |
-| Colours | the `@theme` block in [`src/index.css`](src/index.css) |
-| Fonts | imports in [`src/main.tsx`](src/main.tsx) and `--font-*` in [`src/index.css`](src/index.css) |
-| Portrait | replace [`public/id.jpg`](public/id.jpg) with a square image |
-| Page title and social preview text | [`index.html`](index.html) |
-
-### Colour palette
-
-| Role | Hex | Swatch |
-|---|---|---|
-| Page background | `#0e1319` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-0e1319?style=flat-square) |
-| Card surface | `#141b24` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-141b24?style=flat-square) |
-| Raised surface | `#19222d` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-19222d?style=flat-square) |
-| Borders and dividers | `#243040` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-243040?style=flat-square) |
-| Body text | `#e9edf2` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-e9edf2?style=flat-square) |
-| Muted text | `#9aa7b6` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-9aa7b6?style=flat-square) |
-| Accent (buttons, active links) | `#e3b04b` | ![](https://img.shields.io/badge/%20%20%20%20%20%20%20-e3b04b?style=flat-square) |
-
-<details>
-<summary><b>Project structure</b></summary>
-
-```text
-.
-├── index.html            Page title, description and social preview tags
-├── vite.config.ts        Vite with the React and Tailwind plugins
-├── tsconfig.json
-├── package.json
-├── public/
-│   └── id.jpg            Portrait used in the hero
-└── src/
-    ├── main.tsx          Entry point, fonts and reduced-motion setup
-    ├── App.tsx           Header, sections and reusable UI pieces
-    ├── PhotoCard3D.tsx   Pointer-driven tilting portrait
-    ├── data.ts           All site content, typed
-    ├── index.css         Tailwind import and design tokens
-    └── vite-env.d.ts
+```bash
+npm run check    # TypeScript validation
+npm test         # TypeScript, production build, and four artifact checks
+npm run build    # Production static site in dist/
+npm run preview  # Preview dist/ locally
 ```
 
-</details>
+Serve the site over HTTP; opening `index.html` directly from the filesystem does not run the app.
 
----
+## What changed
+
+- A stronger editorial hero with sage accents, serif display typography, an updated portrait frame, and social icons.
+- Download Resume and View Resume controls in both the Hero and About sections, plus a header résumé link.
+- Coordinated dark and light themes with saved preferences and a small pre-paint script to prevent theme flashes.
+- Responsive education cards, categorized skill panels, project cards with lightweight interface illustrations, a featured QueryPilot request diagram, certification rows, and a dedicated contact panel.
+- Subtle entrance/reveal animations, pointer-only portrait tilt, hover feedback, an ambient gradient, reading progress, and a floating back-to-top link.
+- Keyboard-accessible mobile navigation, Escape-to-close with focus restoration, labelled sections, active navigation, skip link, visible focus, and reduced-motion support.
+- Metadata, Person structured data, a favicon, a no-JavaScript contact fallback, and relative asset paths for root and repository hosting.
+
+No runtime or development dependencies were added. Prettier was used as a temporary authoring tool only. No services, forms, trackers, or backend are needed. Email controls open a chooser with Gmail, the default email application, and a copy-address option.
+
+## Files
+
+| File                                  | Purpose                                                                     |
+| ------------------------------------- | --------------------------------------------------------------------------- |
+| `src/App.tsx`                         | Sections, reusable controls, navigation, theme persistence, and progress    |
+| `src/PhotoCard3D.tsx`                 | Existing portrait interaction, improved frame, base-aware photo path        |
+| `src/index.css`                       | Theme tokens, responsive layouts, effects, reduced-motion rules             |
+| `src/EmailContactDialog.tsx` | Shared accessible email chooser and clipboard fallback |
+| `src/main.tsx`                        | Existing entry point plus bundled italic Fraunces font                      |
+| `src/data.ts`                         | Original personal content, unchanged                                        |
+| `public/Shivansh_Aggarwal_Resume.pdf` | Original supplied résumé, copied unchanged                                  |
+| `public/favicon.svg`                  | Lightweight monogram favicon                                                |
+| `index.html`                          | SEO metadata, theme initialization, and no-JavaScript fallback              |
+| `vite.config.ts`                      | Existing plugins with `base: './'` for portable static assets               |
+| `scripts/build.test.mjs`              | Checks relative build assets, PDF integrity, portrait/favicon, and metadata |
+| `docs/VALIDATION.md`                  | Verification results and remaining limits                                   |
+
+Existing screenshot files in `docs/` are retained as historical previews. Use the new preview images provided with the delivery to see the upgraded design.
+
+## Content and design edits
+
+Edit `src/data.ts` to update your profile, skills, schools, projects, credentials, or GitHub snapshot. Project descriptions and technology labels belong to their original projects; the existing Personal Developer Portfolio entry still describes the previously linked Next.js project, while this checkout uses Vite. The GitHub numbers are intentionally labelled as a manually maintained snapshot.
+
+Replace `public/Shivansh_Aggarwal_Resume.pdf` to update your résumé later, keeping the filename. The build integrity test compares the public and deployed files, so replacing it does not require changing a hardcoded hash. Both résumé actions use this one file. Download uses the native same-origin `download` attribute; View opens it in a new tab. Mobile browser PDF and download handling follows the visitor's browser settings.
+
+Theme colors live in `@theme` and `:root[data-theme="light"]` in `src/index.css`. Fonts are bundled locally through the existing Fontsource packages. Project visuals are CSS illustrations, not screenshots or claims about the exact live UI.
 
 ## Deploy
 
-The site builds to plain static files, so any static host works. On **Vercel**:
+Run `npm test` before deploying. Publish the **contents of `dist/`**, including the PDF, photo, favicon, and assets folder.
 
-1. Push this repository to GitHub.
-2. In Vercel choose **Add New → Project** and import the repository.
-3. Keep the **Vite** framework preset (build command `npm run build`, output directory `dist`).
-4. Click **Deploy**.
+### Vercel
 
-Once it is live, add the URL to the placeholder near the top of this README and to your GitHub profile.
+1. Push the updated source to your repository and import it into Vercel.
+2. Choose the Vite preset, build command `npm run build`, and output directory `dist`.
+3. Deploy. No environment variables are required.
 
----
+### Netlify
 
-## Contact
+Import your repository, use `npm run build` and publish directory `dist`. Alternatively, build locally and drag the `dist` folder into Netlify's manual deploy interface.
 
-<p>
-  <a href="https://github.com/Shiavsnhfbd123"><b>GitHub</b></a> &nbsp;·&nbsp;
-  <a href="https://www.linkedin.com/in/shivanshhr123"><b>LinkedIn</b></a> &nbsp;·&nbsp;
-  <a href="mailto:Shivanshfbd123@gmail.com"><b>Email</b></a>
-</p>
+### GitHub Pages (manual)
 
-<sub>Built by Shivansh Aggarwal, Faridabad, India. Package license: ISC, as declared in `package.json`.</sub>
+1. Run `npm run build`.
+2. Put the contents of `dist/` at the root of a dedicated publishing branch such as `gh-pages`, keeping the source on your existing branch.
+3. In repository Settings → Pages, select **Deploy from a branch**, choose that publishing branch and `/ (root)`, then save.
+
+The relative Vite base and base-aware résumé/photo links support a repository URL such as `https://YOUR-USERNAME.github.io/YOUR-REPOSITORY/`. No deployment workflow or additional repository permissions are included. This task prepares local source and build artifacts; it does not publish a live site.
+
+Once you have your final deployment URL, add a canonical link and `og:url` in `index.html`, and change `og:image` / `twitter:image` to the absolute hosted photo URL for reliable social previews. Rebuild after those edits.
+

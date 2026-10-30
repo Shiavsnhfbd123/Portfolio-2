@@ -1,321 +1,874 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import PhotoCard3D from './PhotoCard3D'
 import {
-  profile, education, learning, interests, skills, featured, featuredPoints,
-  pipeline, projects, certs, stats, type Project,
-} from './data'
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type MouseEventHandler,
+} from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import PhotoCard3D from "./PhotoCard3D";
+import EmailContactDialog from "./EmailContactDialog";
+import { Icon, type IconName } from "./Icon";
+import {
+  profile,
+  education,
+  learning,
+  interests,
+  skills,
+  featured,
+  featuredPoints,
+  pipeline,
+  projects,
+  certs,
+  stats,
+  type Project,
+} from "./data";
 
-const sections = ['about', 'education', 'skills', 'projects', 'certifications', 'connect'] as const
-
-function useActive(ids: readonly string[]) {
-  const [active, setActive] = useState<string>('')
+const sections = [
+  "about",
+  "education",
+  "skills",
+  "projects",
+  "certifications",
+  "connect",
+] as const;
+const resume = `${import.meta.env.BASE_URL}Shivansh_Aggarwal_Resume.pdf`;
+function useActive() {
+  const [active, setActive] = useState("");
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
-      { rootMargin: '-40% 0px -55% 0px' },
-    )
-    ids.forEach((id) => {
-      const el = document.getElementById(id)
-      if (el) io.observe(el)
-    })
-    return () => io.disconnect()
-  }, [ids])
-  return active
+    let frame = 0;
+    const update = () => {
+      const position = window.scrollY + Math.min(window.innerHeight * 0.3, 200);
+      let current = "";
+      sections.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el.offsetTop <= position) current = id;
+      });
+      if (
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 4
+      )
+        current = "connect";
+      setActive(current);
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      document.documentElement.style.setProperty(
+        "--scroll-progress",
+        `${total > 0 ? window.scrollY / total : 0}`,
+      );
+      frame = 0;
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+  return active;
 }
 
-const Reveal = ({ children, delay = 0, className = '' }: { children: ReactNode; delay?: number; className?: string }) => (
-  <motion.div
-    className={className}
-    initial={{ opacity: 0, y: 10 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-40px' }}
-    transition={{ duration: 0.4, delay, ease: 'easeOut' }}
-  >
-    {children}
-  </motion.div>
-)
+function Reveal({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      className={className}
+      initial={reduce ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-24px" }}
+      transition={{ duration: 0.55, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+const Tag = ({
+  children,
+  accent = false,
+}: {
+  children: ReactNode;
+  accent?: boolean;
+}) => <span className={`tag${accent ? " tag-accent" : ""}`}>{children}</span>;
 
-const Tag = ({ children, accent = false }: { children: ReactNode; accent?: boolean }) => (
-  <span className={`rounded-md border px-2.5 py-1 text-[13px] leading-5 ${accent ? 'border-accent/40 bg-accent/10 text-accent' : 'border-line bg-raised text-fg/90'}`}>
-    {children}
-  </span>
-)
-
-const Btn = ({ href, children, primary = false }: { href: string; children: ReactNode; primary?: boolean }) => {
-  const ext = href.startsWith('http')
+function Btn({
+  href,
+  children,
+  primary = false,
+  icon = "arrow",
+  download,
+  newTab = false,
+  onClick,
+  opensDialog = false,
+}: {
+  href: string;
+  children: ReactNode;
+  primary?: boolean;
+  icon?: IconName;
+  download?: string;
+  newTab?: boolean;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+  opensDialog?: boolean;
+}) {
+  const external = href.startsWith("http") || newTab;
   return (
     <a
       href={href}
-      target={ext ? '_blank' : undefined}
-      rel={ext ? 'noreferrer' : undefined}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-4 py-2 text-sm font-semibold transition duration-150 active:translate-y-px ${
-        primary
-          ? 'border-accent bg-accent text-accent-ink hover:border-accent-hover hover:bg-accent-hover'
-          : 'border-line text-fg hover:border-accent/60 hover:text-accent'
-      }`}
+      className={`button${primary ? " button-primary" : ""}`}
+      target={external && !download ? "_blank" : undefined}
+      rel={external ? "noopener noreferrer" : undefined}
+      download={download}
+      onClick={onClick}
+      aria-haspopup={opensDialog ? "dialog" : undefined}
     >
-      {children}
-      {ext && <span aria-hidden>↗</span>}
+      <Icon name={icon} />
+      <span>{children}</span>
+      {newTab && <span className="sr-only"> (opens in a new tab)</span>}
     </a>
-  )
+  );
+}
+function ResumeActions() {
+  return (
+    <div className="resume-actions">
+      <Btn
+        href={resume}
+        primary
+        icon="download"
+        download="Shivansh_Aggarwal_Resume.pdf"
+      >
+        Download Resume
+      </Btn>
+      <Btn href={resume} icon="file" newTab>
+        View Resume
+      </Btn>
+    </div>
+  );
+}
+function Section({
+  id,
+  number,
+  title,
+  caption,
+  children,
+}: {
+  id: string;
+  number: string;
+  title: string;
+  caption: string;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      aria-labelledby={`${id}-title`}
+      className="content-section"
+    >
+      <div className="section-heading">
+        <span className="eyebrow">
+          <span className="section-number">{number}</span> / {caption}
+        </span>
+        <h2 id={`${id}-title`}>{title}</h2>
+      </div>
+      <div className="section-content">{children}</div>
+    </section>
+  );
 }
 
-const Section = ({ id, title, children }: { id: string; title: string; children: ReactNode }) => (
-  <section id={id} className="scroll-mt-16 border-t border-line py-14 md:py-20">
-    <div className="grid gap-6 md:grid-cols-[200px_1fr] md:gap-10 lg:grid-cols-[240px_1fr] lg:gap-14">
-      <h2 className="font-serif text-2xl font-semibold md:sticky md:top-24 md:self-start md:text-3xl">{title}</h2>
-      <div className="min-w-0">{children}</div>
-    </div>
-  </section>
-)
-
-const Label = ({ children }: { children: ReactNode }) => (
-  <p className="mb-3 font-mono text-[13px] text-muted">{children}</p>
-)
-
 function Header({ active }: { active: string }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(() =>
+    document.documentElement.dataset.theme === "light" ? "light" : "dark",
+  );
+  const toggle = useRef<HTMLButtonElement>(null);
+  const reduce = useReducedMotion();
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        setOpen(false);
+        toggle.current?.focus();
+      }
+    };
+    const mq = window.matchMedia("(min-width: 1100px)");
+    const onResize = () => {
+      if (mq.matches) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onResize);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onResize);
+    };
+  }, [open]);
+  const changeTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.theme = next;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", next === "dark" ? "#101511" : "#f7f7ef");
+    try {
+      localStorage.setItem("portfolio-theme", next);
+    } catch {
+      /* Storage is optional. */
+    }
+  };
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-bg/85 backdrop-blur-md">
-      <nav aria-label="Primary" className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <a href="#top" className="font-serif text-lg font-semibold">Shivansh Aggarwal</a>
-        <ul className="hidden gap-7 text-sm md:flex">
+    <header className="site-header">
+      <div className="reading-progress" aria-hidden="true" />
+      <nav className="header-inner" aria-label="Primary">
+        <a
+          className="brand"
+          href="#top"
+          onClick={() => setOpen(false)}
+          aria-label={`${profile.name} — back to top`}
+        >
+          <span className="monogram" aria-hidden="true">
+            SA
+          </span>
+          <span className="brand-name">
+            {profile.name.toUpperCase()}
+            <span>DEVELOPER AND CURIOUS BUILDER</span>
+          </span>
+        </a>
+        <ul className="desktop-links">
           {sections.map((s) => (
             <li key={s}>
               <a
                 href={`#${s}`}
-                aria-current={active === s ? 'true' : undefined}
-                className={`relative py-1 capitalize transition-colors ${
-                  active === s ? 'text-fg after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:bg-accent' : 'text-muted hover:text-fg'
-                }`}
+                aria-current={active === s ? "location" : undefined}
               >
-                {s}
+                {s === "connect" ? "Contact" : s}
               </a>
             </li>
           ))}
         </ul>
-        <button
-          type="button"
-          className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium md:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          onClick={() => setOpen((o) => !o)}
-        >
-          {open ? 'Close' : 'Menu'}
-        </button>
+        <div className="header-actions">
+          <button
+            className="icon-button"
+            onClick={changeTheme}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            <Icon name={theme === "dark" ? "sun" : "moon"} />
+          </button>
+          <a
+            href={resume}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="header-resume"
+          >
+            Resume <Icon name="arrow" size={15} />
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          <button
+            ref={toggle}
+            className="icon-button menu-toggle"
+            aria-label={open ? "Close navigation" : "Open navigation"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen(!open)}
+          >
+            <Icon name={open ? "close" : "menu"} />
+          </button>
+        </div>
       </nav>
       <AnimatePresence>
         {open && (
-          <motion.ul
+          <motion.nav
             id="mobile-menu"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-line px-5 md:hidden"
+            aria-label="Mobile"
+            className="mobile-menu"
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduce ? 0 : 0.15 }}
           >
-            {sections.map((s) => (
-              <li key={s} className="border-b border-line last:border-0">
-                <a href={`#${s}`} onClick={() => setOpen(false)} className="block py-3 capitalize text-fg">{s}</a>
-              </li>
-            ))}
-          </motion.ul>
+            <ul>
+              {sections.map((s, i) => (
+                <li key={s}>
+                  <a
+                    href={`#${s}`}
+                    aria-current={active === s ? "location" : undefined}
+                    onClick={() => setOpen(false)}
+                  >
+                    <span className="eyebrow">0{i + 1}</span>
+                    {s === "connect" ? "Contact" : s}
+                    <Icon name="arrow" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </motion.nav>
         )}
       </AnimatePresence>
     </header>
-  )
+  );
 }
 
 function ProjectCard({ p, i }: { p: Project; i: number }) {
   return (
-    <Reveal delay={i * 0.06} className="h-full">
-      <article className="flex h-full flex-col rounded-lg border border-line bg-surface p-6 transition duration-200 hover:-translate-y-0.5 hover:border-accent/50 hover:shadow-[0_16px_32px_-20px_rgba(0,0,0,0.9)]">
-        <h3 className="text-xl font-semibold leading-snug">{p.name}</h3>
-        <div className="mt-3 flex flex-wrap gap-2">{p.status.map((s) => <Tag key={s}>{s}</Tag>)}</div>
-        <p className="mt-4 text-[15px] text-muted">{p.desc}</p>
-        <p className="mt-4 font-mono text-[12.5px] leading-relaxed text-muted/90">{p.tech.join(' / ')}</p>
-        <div className="mt-auto flex flex-wrap gap-3 pt-6">
-          {p.github && <Btn href={p.github}>GitHub</Btn>}
-          {p.demo && <Btn href={p.demo} primary>Live demo</Btn>}
+    <Reveal delay={i * 0.06} className="project-reveal">
+      <article className="project-card">
+        <div
+          className={`project-visual project-visual-${i}`}
+          aria-hidden="true"
+        >
+          <span className="visual-index">0{i + 2} / PROJECT</span>
+          {i < 2 ? (
+            <div className="mini-library">
+              <div className="mini-sidebar">
+                <Icon name="database" size={23} />
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="mini-content">
+                <div className="mini-title">
+                  {i === 0 ? "Library / AutoFill" : "Library / Dashboard"}
+                </div>
+                <div className="mini-books">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <div className="mini-lines">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+                {i === 0 && (
+                  <span className="autofill">
+                    <Icon name="spark" size={12} /> One-click AutoFill
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="mini-portfolio">
+              <span>
+                Shivansh Aggarwal<span>.</span>
+              </span>
+              <p>
+                Building ideas into
+                <br />
+                <em>working applications.</em>
+              </p>
+              <div />
+              <div />
+            </div>
+          )}
+          <span className="visual-note">Interface illustration</span>
+        </div>
+        <div className="project-body">
+          <div className="project-status">
+            {p.status.map((s) => (
+              <Tag key={s}>{s}</Tag>
+            ))}
+          </div>
+          <h3>{p.name}</h3>
+          <p className="description">{p.desc}</p>
+          <div className="project-tech">
+            {p.tech.map((t) => (
+              <span key={t}>{t}</span>
+            ))}
+          </div>
+          <div className="project-links">
+            {p.github && (
+              <Btn href={p.github} icon="github">
+                Source code
+              </Btn>
+            )}
+            {p.demo && <Btn href={p.demo}>Live demo</Btn>}
+          </div>
         </div>
       </article>
     </Reveal>
-  )
+  );
 }
 
 export default function App() {
-  const active = useActive(sections)
-  const links: [string, string, string][] = [
-    ['GitHub', profile.github, `github.com/${profile.githubHandle}`],
-    ['LinkedIn', profile.linkedin, 'linkedin.com/in/shivanshhr123'],
-    ['Email', `mailto:${profile.email}`, profile.email],
-  ]
+  const active = useActive();
+  const emailDialogRef = useRef<HTMLDialogElement>(null);
+  const openEmail: MouseEventHandler<HTMLAnchorElement> = (event) => {
+    const dialog = emailDialogRef.current;
+    if (dialog) {
+      event.preventDefault();
+      if (!dialog.open) dialog.showModal();
+    }
+  };
+  const links: { name: string; href: string; label: string; icon: IconName }[] =
+    [
+      {
+        name: "GitHub",
+        href: profile.github,
+        label: `github.com/${profile.githubHandle}`,
+        icon: "github",
+      },
+      {
+        name: "LinkedIn",
+        href: profile.linkedin,
+        label: "linkedin.com/in/shivanshhr123",
+        icon: "linkedin",
+      },
+      {
+        name: "Email",
+        href: `mailto:${profile.email}`,
+        label: profile.email,
+        icon: "mail",
+      },
+    ];
+  const skillIcons: IconName[] = [
+    "code",
+    "terminal",
+    "database",
+    "spark",
+    "code",
+  ];
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
+      <a href="#main" className="skip-link">
         Skip to content
       </a>
       <Header active={active} />
-
-      <main id="main" className="mx-auto max-w-6xl px-5">
-        <section id="top" className="grid items-center gap-12 py-14 md:grid-cols-[1.2fr_0.8fr] md:py-24">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <p className="font-mono text-sm text-muted">Hello, I'm</p>
-            <h1 className="mt-3 text-[2.6rem] font-semibold leading-[1.05] sm:text-6xl lg:text-7xl">{profile.name}</h1>
-            <p className="mt-4 text-xl font-medium text-accent">{profile.title}</p>
-            <p className="mt-5 max-w-lg text-lg text-muted">{profile.tagline}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Btn href="#projects" primary>View projects</Btn>
-              <Btn href={profile.github}>GitHub</Btn>
-              <Btn href={profile.linkedin}>LinkedIn</Btn>
+      <main id="main" className="page-shell">
+        <section id="top" className="hero">
+          <div className="hero-copy">
+            <div className="hero-intro">
+              <span className="status-dot" /> FULL-STACK DEVELOPMENT · AI ·
+              CYBERSECURITY
             </div>
-            <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted">
-              {[profile.location, 'IIT Patna: B.S. AI and Cyber Security', 'SVSU: B.Tech Computer Engineering'].map((t) => (
-                <li key={t} className="flex items-center gap-2"><span aria-hidden className="size-1 rounded-full bg-accent" />{t}</li>
+            <p className="hello">Hello, I’m</p>
+            <h1>
+              {profile.name.split(" ")[0]}
+              <br />
+              <em>
+                {profile.name.split(" ").slice(1).join(" ")}
+                <span>.</span>
+              </em>
+            </h1>
+            <div className="hero-role">
+              <span />
+              {profile.title}
+            </div>
+            <p className="hero-description">{profile.tagline}</p>
+            <div className="hero-project-link">
+              <a href="#projects">
+                Explore my work <Icon name="arrow" size={19} />
+              </a>
+              <span>Ideas. Code. Working applications.</span>
+            </div>
+            <ResumeActions />
+            <div className="hero-socials">
+              <span>FIND ME ON</span>
+              {links.map((l) => (
+                <a
+                  key={l.name}
+                  href={l.href}
+                  aria-label={l.name}
+                  onClick={l.name === "Email" ? openEmail : undefined}
+                  aria-haspopup={l.name === "Email" ? "dialog" : undefined}
+                  target={l.name === "Email" ? undefined : "_blank"}
+                  rel="noopener noreferrer"
+                >
+                  <Icon name={l.icon} />
+                </a>
               ))}
-            </ul>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
+              <span className="social-divider" />
+              <span className="hero-location">
+                <Icon name="pin" size={14} /> Faridabad, India
+              </span>
+            </div>
+          </div>
+          <div className="hero-portrait">
+            <div className="portrait-label">
+              <span className="eyebrow">THE PERSON BEHIND THE CODE</span>
+              <Icon name="spark" />
+            </div>
             <PhotoCard3D />
-          </motion.div>
+            <div className="portrait-caption">
+              <span>
+                <span className="status-dot" /> Learning. Building. Evolving.
+              </span>
+              <span className="eyebrow">01 / INTRO</span>
+            </div>
+          </div>
+          <div className="hero-bottom">
+            <div>
+              <span className="eyebrow">CURRENTLY STUDYING AT</span>
+              <p>
+                IIT Patna <span>&</span> SVSU
+              </p>
+            </div>
+            <p>
+              B.S. AI & Cyber Security
+              <br />
+              B.Tech Computer Engineering
+            </p>
+            <a href="#about" className="scroll-cue">
+              A little more about me <span>↓</span>
+            </a>
+          </div>
         </section>
 
-        <Section id="about" title="About">
+        <Section
+          id="about"
+          number="01"
+          caption="A LITTLE CONTEXT"
+          title="Curiosity meets creation."
+        >
           <Reveal>
-            <p className="max-w-2xl text-xl leading-relaxed text-fg/90">{profile.summary}</p>
-            <dl className="mt-10 grid gap-8 sm:grid-cols-2">
-              <div><dt className="mb-3 font-mono text-[13px] text-muted">Currently learning</dt><dd className="flex flex-wrap gap-2">{learning.map((l) => <Tag key={l}>{l}</Tag>)}</dd></div>
-              <div><dt className="mb-3 font-mono text-[13px] text-muted">Interests</dt><dd className="flex flex-wrap gap-2">{interests.map((i) => <Tag key={i}>{i}</Tag>)}</dd></div>
-            </dl>
-            <blockquote className="mt-10 border-l-2 border-accent pl-5">
-              <Label>Goal</Label>
-              <p className="font-serif text-xl italic leading-snug sm:text-2xl">{profile.goal}</p>
+            <p className="about-lead">{profile.summary}</p>
+            <div className="about-details">
+              <div>
+                <h3 className="eyebrow">CURRENTLY LEARNING</h3>
+                <div className="tags">
+                  {learning.map((l) => (
+                    <Tag accent key={l}>
+                      {l}
+                    </Tag>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h3 className="eyebrow">WHAT I’M DRAWN TO</h3>
+                <div className="tags">
+                  {interests.map((i) => (
+                    <Tag key={i}>{i}</Tag>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <blockquote>
+              <Icon name="spark" size={25} />
+              <div>
+                <span className="eyebrow">THE GOAL</span>
+                <p>{profile.goal}</p>
+              </div>
             </blockquote>
-            <p className="mt-6 text-muted">Off screen: {profile.hobby.toLowerCase()}.</p>
+            <div className="about-footer">
+              <p>Off screen: {profile.hobby.toLowerCase()}.</p>
+              <span className="location">
+                <Icon name="pin" size={14} />
+                {profile.location}
+              </span>
+            </div>
+            <div className="about-resume">
+              <div>
+                <h3>Get the full picture.</h3>
+                <p>My background, skills, and experience in one PDF.</p>
+              </div>
+              <ResumeActions />
+            </div>
           </Reveal>
         </Section>
 
-        <Section id="education" title="Education">
-          <ol className="divide-y divide-line border-y border-line">
+        <Section
+          id="education"
+          number="02"
+          caption="THE FOUNDATION"
+          title="Always a student."
+        >
+          <ol className="education-list">
             {education.map((e, i) => (
               <li key={e.school}>
-                <Reveal delay={i * 0.06} className="grid gap-1 py-6 sm:grid-cols-[1fr_auto] sm:gap-8">
-                  <div>
-                    <h3 className="text-xl font-semibold">{e.school}</h3>
-                    <p className="mt-1 text-muted">{e.mode} {e.degree}</p>
+                <Reveal delay={i * 0.08}>
+                  <div className="education-top">
+                    <span className="school-mark" aria-hidden="true">
+                      {i === 0 ? "IIT" : "SVSU"}
+                    </span>
+                    <span className="tag">{e.mode}</span>
                   </div>
-                  <p className="font-mono text-sm text-muted sm:text-right">{e.progress}<br />Expected {e.grad}</p>
+                  <h3>{e.school}</h3>
+                  <p className="degree">{e.degree}</p>
+                  <div className="education-meta">
+                    <span>{e.progress}</span>
+                    <span>Expected {e.grad}</span>
+                  </div>
                 </Reveal>
               </li>
             ))}
           </ol>
         </Section>
 
-        <Section id="skills" title="Tech stack">
-          <Reveal>
-            <dl className="divide-y divide-line border-y border-line">
-              {Object.entries(skills).map(([group, items]) => (
-                <div key={group} className="grid gap-3 py-5 sm:grid-cols-[150px_1fr]">
-                  <dt className="pt-1 font-mono text-[13px] text-muted">{group}</dt>
-                  <dd className="flex flex-wrap gap-2">{items.map((s) => <Tag key={s}>{s}</Tag>)}</dd>
+        <Section
+          id="skills"
+          number="03"
+          caption="MY TOOLKIT"
+          title="The tools behind the ideas."
+        >
+          <div className="skills-grid">
+            {Object.entries(skills).map(([group, items], i) => (
+              <Reveal key={group} delay={i * 0.04}>
+                <div className="skill-group">
+                  <div className="skill-title">
+                    <span className="skill-icon">
+                      <Icon name={skillIcons[i]} size={21} />
+                    </span>
+                    <h3>{group}</h3>
+                    <span className="skill-count">
+                      {String(items.length).padStart(2, "0")}
+                    </span>
+                  </div>
+                  <div className="tags">
+                    {items.map((s) => (
+                      <Tag key={s}>{s}</Tag>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </dl>
-          </Reveal>
+              </Reveal>
+            ))}
+          </div>
         </Section>
 
-        <Section id="projects" title="Projects">
+        <section
+          id="projects"
+          aria-labelledby="projects-title"
+          className="projects-section"
+        >
+          <div className="wide-section-heading">
+            <div>
+              <span className="eyebrow">
+                <span className="section-number">04</span> / SELECTED WORK
+              </span>
+              <h2 id="projects-title">
+                Ideas, put into practice<span>.</span>
+              </h2>
+            </div>
+            <p>
+              A selection of things I’ve built.
+              <br />
+              From full-stack systems to AI exploration.
+            </p>
+          </div>
           <Reveal>
-            <article className="rounded-lg border border-line border-t-2 border-t-accent bg-surface p-6 sm:p-8">
-              <div className="grid gap-10 lg:grid-cols-[1.35fr_1fr]">
-                <div>
-                  <p className="font-mono text-[13px] text-accent">Featured project</p>
-                  <h3 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">{featured.name}</h3>
-                  <div className="mt-4 flex flex-wrap gap-2">{featured.status.map((s, i) => <Tag key={s} accent={i === 0}>{s}</Tag>)}</div>
-                  <p className="mt-5 text-lg text-muted">{featured.desc}</p>
-                  <ul className="mt-5 list-disc space-y-1.5 pl-5 text-muted marker:text-accent">{featuredPoints.map((f) => <li key={f}>{f}</li>)}</ul>
-                  <p className="mt-6 font-mono text-[12.5px] leading-relaxed text-muted/90">{featured.tech.join(' / ')}</p>
+            <article className="featured-project">
+              <div className="featured-copy">
+                <span className="eyebrow featured-label">
+                  <span className="status-dot" /> FEATURED / IN DEVELOPMENT
+                </span>
+                <h3>
+                  {featured.name.split(":")[0]}
+                  <span>
+                    {featured.name.split(":").slice(1).join(":").trim()}
+                  </span>
+                </h3>
+                <div className="tags">
+                  {featured.status.map((s, i) => (
+                    <Tag key={s} accent={i === 0}>
+                      {s}
+                    </Tag>
+                  ))}
                 </div>
-                <div className="border-t border-line pt-8 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
-                  <h4 className="text-lg font-semibold">How a request is handled</h4>
-                  <ol className="relative mt-5 ml-2 space-y-5 border-l border-line">
-                    {pipeline.map((p) => (
-                      <li key={p.step} className="relative pl-6">
-                        <span aria-hidden className={`absolute -left-[7px] top-1.5 size-3.5 rounded-full border-2 ${p.backend ? 'border-accent bg-accent' : 'border-muted bg-surface'}`} />
-                        <p className="font-medium">{p.step}</p>
-                        <p className="text-sm text-muted">{p.note}</p>
+                <p className="description">{featured.desc}</p>
+                <ul className="feature-points">
+                  {featuredPoints.map((f) => (
+                    <li key={f}>
+                      <Icon name="check" size={16} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <div className="project-tech">
+                  {featured.tech.map((t) => (
+                    <span key={t}>{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="pipeline-panel">
+                <div className="panel-bar">
+                  <span className="window-dots">
+                    <i />
+                    <i />
+                    <i />
+                  </span>
+                  <span>querypilot / request-flow</span>
+                  <Icon name="terminal" size={15} />
+                </div>
+                <div className="pipeline-content">
+                  <h4>From a question to a query.</h4>
+                  <p>A look at how a request is handled.</p>
+                  <ol>
+                    {pipeline.map((p, i) => (
+                      <li
+                        key={p.step}
+                        className={p.backend ? "backend-step" : ""}
+                      >
+                        <span className="step-marker">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <div>
+                          <h5>{p.step}</h5>
+                          <p>{p.note}</p>
+                        </div>
+                        {p.backend && <Icon name="check" size={14} />}
                       </li>
                     ))}
                   </ol>
-                  <p className="mt-6 text-sm text-muted">Hollow: the AI suggests. Filled: the backend enforces. Repository and demo are not published yet.</p>
+                  <div className="pipeline-legend">
+                    <span>
+                      <i />
+                      AI suggests
+                    </span>
+                    <span>
+                      <i />
+                      Backend enforces
+                    </span>
+                  </div>
+                  <p className="project-availability">
+                    Repository and demo are not published yet.
+                  </p>
                 </div>
               </div>
             </article>
           </Reveal>
-          <div className="mt-6 grid gap-6 md:grid-cols-3">{projects.map((p, i) => <ProjectCard key={p.name} p={p} i={i} />)}</div>
-        </Section>
+          <div className="projects-grid">
+            {projects.map((p, i) => (
+              <ProjectCard key={p.name} p={p} i={i} />
+            ))}
+          </div>
+        </section>
 
-        <Section id="certifications" title="Certifications">
-          <ul className="divide-y divide-line border-y border-line">
+        <Section
+          id="certifications"
+          number="05"
+          caption="MILESTONES"
+          title="Learning in action."
+        >
+          <ul className="certifications-list">
             {certs.map((c, i) => (
               <li key={c.name}>
-                <Reveal delay={i * 0.05} className="flex flex-wrap items-center justify-between gap-4 py-5">
+                <Reveal delay={i * 0.05}>
+                  <span className="certificate-index">0{i + 1}</span>
                   <div>
-                    <h3 className="text-lg font-semibold">{c.name}</h3>
-                    <p className="text-sm text-muted">{c.by} / {c.date}</p>
+                    <h3>{c.name}</h3>
+                    <p>
+                      {c.by} <span>·</span> {c.date}
+                    </p>
                   </div>
-                  <Btn href={c.url}>View credential</Btn>
+                  <a
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="credential-link"
+                    aria-label={`View ${c.name} credential (opens in a new tab)`}
+                  >
+                    <span>View credential</span>
+                    <Icon name="arrow" />
+                  </a>
                 </Reveal>
               </li>
             ))}
           </ul>
-          <h3 className="mb-5 mt-14 text-xl font-semibold">On GitHub</h3>
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4">
+          <div className="github-heading">
+            <h3>
+              <Icon name="github" size={21} /> On GitHub
+            </h3>
+            <span>Manually maintained snapshot</span>
+          </div>
+          <dl className="github-stats">
             {stats.map((s) => (
-              <div key={s.label} className="flex flex-col-reverse bg-surface p-5">
-                <dt className="mt-1 text-sm text-muted">{s.label}</dt>
-                <dd className="font-serif text-4xl font-semibold">{s.n}</dd>
+              <div key={s.label}>
+                <dt>{s.label}</dt>
+                <dd>
+                  {s.n}
+                  <span>↗</span>
+                </dd>
               </div>
             ))}
           </dl>
         </Section>
 
-        <Section id="connect" title="Connect">
+        <section
+          id="connect"
+          aria-labelledby="connect-title"
+          className="contact-section"
+        >
           <Reveal>
-            <p className="max-w-xl font-serif text-3xl leading-tight sm:text-4xl">Let's build something useful and innovative.</p>
-            <ul className="mt-10 divide-y divide-line border-y border-line">
-              {links.map(([k, href, label]) => (
-                <li key={k}>
+            <div className="contact-intro">
+              <span className="eyebrow">
+                <span className="section-number">06</span> / START A
+                CONVERSATION
+              </span>
+              <Icon name="spark" size={32} />
+            </div>
+            <div className="contact-heading">
+              <h2 id="connect-title">
+                Let’s build
+                <br />
+                something <em>useful.</em>
+              </h2>
+              <div>
+                <p>
+                  Useful and innovative applications start with a conversation.
+                </p>
+                <Btn
+                  href={`mailto:${profile.email}`}
+                  primary
+                  icon="mail"
+                  onClick={openEmail}
+                  opensDialog
+                >
+                  Say hello
+                </Btn>
+              </div>
+            </div>
+            <ul className="contact-links">
+              {links.map((l) => (
+                <li key={l.name}>
                   <a
-                    href={href}
-                    target={k === 'Email' ? undefined : '_blank'}
-                    rel="noreferrer"
-                    className="group flex flex-wrap items-center justify-between gap-x-6 gap-y-1 py-5 transition-colors hover:text-accent"
+                    href={l.href}
+                    onClick={l.name === "Email" ? openEmail : undefined}
+                    aria-haspopup={l.name === "Email" ? "dialog" : undefined}
+                    target={l.name === "Email" ? undefined : "_blank"}
+                    rel="noopener noreferrer"
                   >
-                    <span className="font-serif text-xl">{k}</span>
-                    <span className="break-all text-sm text-muted transition-colors group-hover:text-accent">
-                      {label} <span aria-hidden className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                    <span className="contact-link-title">
+                      <Icon name={l.icon} size={21} />
+                      {l.name}
                     </span>
+                    <span className="contact-address">{l.label}</span>
+                    <Icon name="arrow" />
                   </a>
                 </li>
               ))}
             </ul>
           </Reveal>
-        </Section>
+        </section>
       </main>
-
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-8 text-sm text-muted">
-          <span>{profile.name}, {profile.location}</span>
-          <a href="#top" className="hover:text-accent">Back to top ↑</a>
+      <EmailContactDialog dialogRef={emailDialogRef} />
+      <footer className="site-footer">
+        <div className="page-shell">
+          <a className="footer-brand" href="#top">
+            {profile.name}
+            <span>.</span>
+          </a>
+          <p>
+            © {new Date().getFullYear()} · {profile.location}
+          </p>
+          <a href="#top">
+            Back to top <Icon name="up" size={15} />
+          </a>
         </div>
       </footer>
+      <a
+        href="#top"
+        className={`back-to-top${active ? " visible" : ""}`}
+        aria-label="Back to top"
+        tabIndex={active ? 0 : -1}
+      >
+        <Icon name="up" />
+      </a>
     </>
-  )
+  );
 }

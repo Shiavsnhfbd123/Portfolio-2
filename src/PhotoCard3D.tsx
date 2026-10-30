@@ -1,57 +1,166 @@
-import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'motion/react'
-import type { PointerEvent } from 'react'
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+} from "motion/react";
+import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
+import { profile } from "./data";
+import { Icon } from "./Icon";
 
 export default function PhotoCard3D() {
-  const reduce = useReducedMotion()
-  const px = useMotionValue(0)
-  const py = useMotionValue(0)
-  const sx = useSpring(px, { stiffness: 140, damping: 20 })
-  const sy = useSpring(py, { stiffness: 140, damping: 20 })
-  const rotateY = useTransform(sx, [-0.5, 0.5], [-6, 6])
-  const rotateX = useTransform(sy, [-0.5, 0.5], [5, -5])
+  const [open, setOpen] = useState(false);
+  const popupId = useId();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLSpanElement>(null);
+  const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const reduce = useReducedMotion();
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+  const sx = useSpring(px, { stiffness: 140, damping: 20 });
+  const sy = useSpring(py, { stiffness: 140, damping: 20 });
+  const rotateY = useTransform(sx, [-0.5, 0.5], [-6, 6]);
+  const rotateX = useTransform(sy, [-0.5, 0.5], [5, -5]);
   const shine = useTransform(
     [sx, sy],
     ([x, y]: number[]) =>
       `radial-gradient(circle at ${(x + 0.5) * 100}% ${(y + 0.5) * 100}%, rgba(255,255,255,0.12), transparent 55%)`,
-  )
+  );
 
   const move = (e: PointerEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    px.set((e.clientX - r.left) / r.width - 0.5)
-    py.set((e.clientY - r.top) / r.height - 0.5)
-  }
-  const leave = () => { px.set(0); py.set(0) }
+    const r = e.currentTarget.getBoundingClientRect();
+    if (e.pointerType !== "mouse") return;
+    px.set((e.clientX - r.left) / r.width - 0.5);
+    py.set((e.clientY - r.top) / r.height - 0.5);
+  };
+  const leave = () => {
+    px.set(0);
+    py.set(0);
+  };
+
+  const closePopup = () => {
+    setOpen(false);
+    triggerRef.current?.focus({ preventScroll: true });
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    px.set(0);
+    py.set(0);
+    firstLinkRef.current?.focus({ preventScroll: true });
+
+    const onOutside = (event: Event) => {
+      if (
+        event.target instanceof Node &&
+        !popupRef.current?.contains(event.target) &&
+        !triggerRef.current?.contains(event.target)
+      ) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus({ preventScroll: true });
+      }
+    };
+    document.addEventListener("pointerdown", onOutside);
+    document.addEventListener("focusin", onOutside);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onOutside);
+      document.removeEventListener("focusin", onOutside);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, px, py]);
 
   return (
     <div
-      className="relative mx-auto w-full max-w-sm pb-4 pr-4"
+      className="portrait-stage"
       style={{ perspective: 1100 }}
-      onPointerMove={reduce ? undefined : move}
+      onPointerMove={reduce || open ? undefined : move}
       onPointerLeave={leave}
     >
       <motion.div
-        style={{ rotateX: reduce ? 0 : rotateX, rotateY: reduce ? 0 : rotateY, transformStyle: 'preserve-3d' }}
+        style={{
+          rotateX: reduce || open ? 0 : rotateX,
+          rotateY: reduce || open ? 0 : rotateY,
+          transformStyle: "preserve-3d",
+        }}
         className="relative"
       >
         <div
-          aria-hidden
-          className="absolute inset-0 rounded-lg border border-accent/40"
-          style={{ transform: 'translateZ(-30px) translate(16px, 16px)' }}
-        />
-        <div
-          className="relative overflow-hidden rounded-lg border border-line shadow-[0_28px_60px_-28px_rgba(0,0,0,0.9)]"
-          style={{ transform: 'translateZ(20px)' }}
+          className="portrait-frame"
+          style={{ transform: "translateZ(20px)" }}
         >
           <img
-            src="/id.jpg"
+            src={`${import.meta.env.BASE_URL}id.jpg`}
             alt="Portrait of Shivansh Aggarwal against a dark circuit-board background"
             width={720}
             height={720}
-            className="aspect-square w-full object-cover"
+            fetchPriority="high"
+            decoding="async"
           />
-          <motion.div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: shine }} />
+          <div className="portrait-overlay">
+            <span>{profile.name.toUpperCase()}</span>
+            <p>
+              <span className="portrait-title">{profile.title}</span>
+              <span className="portrait-social-controls">
+                {open && (
+                  <span
+                    ref={popupRef}
+                    id={popupId}
+                    role="group"
+                    aria-label="Social profiles"
+                    className="portrait-social-popup"
+                  >
+                    <a
+                      ref={firstLinkRef}
+                      className="portrait-link"
+                      href={profile.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="GitHub (opens in a new tab)"
+                      title="GitHub"
+                      onClick={closePopup}
+                    >
+                      <Icon name="github" size={21} />
+                    </a>
+                    <a
+                      className="portrait-link"
+                      href={profile.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="LinkedIn (opens in a new tab)"
+                      title="LinkedIn"
+                      onClick={closePopup}
+                    >
+                      <Icon name="linkedin" size={21} />
+                    </a>
+                  </span>
+                )}
+                <button
+                  ref={triggerRef}
+                  type="button"
+                  className="portrait-link"
+                  aria-label="Open GitHub and LinkedIn profiles"
+                  aria-expanded={open}
+                  aria-controls={popupId}
+                  title="Choose GitHub or LinkedIn"
+                  onClick={() => setOpen((current) => !current)}
+                >
+                  <span aria-hidden="true">↗</span>
+                </button>
+              </span>
+            </p>
+          </div>
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{ background: shine }}
+          />
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

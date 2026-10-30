@@ -1,17 +1,81 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0e1319" />
+    <meta name="theme-color" content="#101511" />
+    <meta name="color-scheme" content="dark light" />
     <title>Shivansh Aggarwal | Full-Stack Developer</title>
-    <meta name="description" content="Shivansh Aggarwal, Full-Stack Developer from Faridabad, India. Projects, education, skills and contact." />
-    <meta property="og:title" content="Shivansh Aggarwal | Full-Stack Developer" />
-    <meta property="og:description" content="Full-stack development with a focus on AI, machine learning and cybersecurity." />
-    <meta property="og:image" content="/id.jpg" />
+    <meta
+      name="description"
+      content="Shivansh Aggarwal, a full-stack developer and computer engineering student in Faridabad, India. Explore projects, AI and cybersecurity interests, education, credentials, and résumé."
+    />
+    <meta name="author" content="Shivansh Aggarwal" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_IN" />
+    <meta
+      property="og:title"
+      content="Shivansh Aggarwal | Full-Stack Developer"
+    />
+    <meta
+      property="og:description"
+      content="Building full-stack web apps while exploring AI, machine learning and cybersecurity. Explore my work and download my résumé."
+    />
+    <meta property="og:image" content="%BASE_URL%id.jpg" />
+    <meta
+      property="og:image:alt"
+      content="Shivansh Aggarwal, Full-Stack Developer"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Shivansh Aggarwal | Full-Stack Developer"
+    />
+    <meta
+      name="twitter:description"
+      content="Full-stack projects, AI exploration, and a little about the person behind the code."
+    />
+    <meta name="twitter:image" content="%BASE_URL%id.jpg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <script>
+      // Apply a saved preference before first paint; the original dark theme is the default.
+      try {
+        const theme = localStorage.getItem("portfolio-theme");
+        if (theme === "light") {
+          document.documentElement.dataset.theme = theme;
+          document.querySelector('meta[name="theme-color"]').content =
+            "#f7f7ef";
+        }
+      } catch {
+        /* Private browsing can disable storage. */
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Shivansh Aggarwal",
+        "description": "Computer engineering student focused on full-stack development, AI, machine learning and cybersecurity.",
+        "sameAs": [
+          "https://github.com/Shiavsnhfbd123",
+          "https://www.linkedin.com/in/shivanshhr123"
+        ],
+        "knowsAbout": [
+          "Full-stack web development",
+          "Artificial intelligence",
+          "Cybersecurity"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript
+      >This portfolio needs JavaScript. Contact Shivansh at
+      <a href="mailto:Shivanshfbd123@gmail.com">Shivanshfbd123@gmail.com</a> or
+      <a href="./Shivansh_Aggarwal_Resume.pdf">view the résumé PDF</a
+      >.</noscript
+    >
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
